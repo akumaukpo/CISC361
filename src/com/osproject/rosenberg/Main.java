@@ -24,8 +24,13 @@ public class Main {
 	public static ArrayList<Release> releases = new ArrayList<Release>();
 	
 	// Hold Queues
+		// SJF
 	public static ArrayList<Job> holdQueue1 = new ArrayList<Job>();
+		// FIFO
 	public static ArrayList<Job> holdQueue2 = new ArrayList<Job>();
+	
+	// Ready Queue
+	public static ArrayList<Job> readyQueue = new ArrayList<Job>();
 	
 	// Reads input text and saves messages into lists to be read later
 	public static void loadFile(){
@@ -129,21 +134,36 @@ public class Main {
 	// Search Job/Request/Release messages for one at the current time or advance time
 	public static void checkArrivalTime(){
 		for(int i = 0; i < jobs.size(); i++){
-			if(jobs.get(i).getArrivalTime() == currentTime){
-				routeJob();
+			Job j = jobs.get(i);
+			if(j.getArrivalTime() == currentTime){
+				routeJob(j);
 			}
 		}
 	}
 	
 	// Handles jobs that arrive at the current time
-	public static void routeJob(){
-		
+	public static void routeJob(Job j){
+		if(j.getRequiredMemory() <= availableMemory){
+			readyQueue.add(j);
+			availableMemory =  availableMemory - j.getRequiredMemory();
+		}
+		else if(j.getPriority() == 1){
+			holdQueue1.add(j);
+		}
+		else{
+			holdQueue2.add(j);
+		}
 	}
 	
 	public static void main(String[] args){
+		
+		// Handle Input Text
 		loadFile();
 		for(int i = 0; i < allLines.size(); i++){
 			parseLine(allLines.get(i));
 		}
+		
+		// Look for new task of any type
+		checkArrivalTime();
 	}
 }

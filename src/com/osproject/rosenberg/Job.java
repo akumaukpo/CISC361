@@ -8,6 +8,7 @@ public class Job {
 	private int requiredDevices;
 	private int runLength;
 	private int priority;
+	private int remainingTime;
 	
 	public Job(int arrivalTime, int jobNumber, int requiredMemory, int requiredDevices, int runLength, int priority) {
 		this.arrivalTime = arrivalTime;
@@ -16,8 +17,20 @@ public class Job {
 		this.requiredDevices = requiredDevices;
 		this.runLength = runLength;
 		this.priority = priority;
+		this.remainingTime = runLength;
 	}
 
+	// Checks if the job can be terminated
+	// if returns non-zero to main, remove from list and return memory
+	public int termintateJob(){
+		if(remainingTime > 0){
+			return 0;
+		}
+		else{
+			return requiredMemory;
+		}
+	}
+	
 	public int getArrivalTime() {
 		return arrivalTime;
 	}
