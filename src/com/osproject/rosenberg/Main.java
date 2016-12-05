@@ -27,6 +27,7 @@ public class Main {
 	public static ArrayList<Job> holdQueue1 = new ArrayList<Job>();
 	public static ArrayList<Job> holdQueue2 = new ArrayList<Job>();
 	
+	// Reads input text and saves messages into lists to be read later
 	public static void loadFile(){
 		String fileName = "/Users/kennyrosenberg/Documents/workspace/OSProject/src/com/osproject/rosenberg/projectInput.txt";
 		String line = null;
@@ -53,6 +54,8 @@ public class Main {
         }
 	}
 	
+	// routes input text to save messages to appropriate location
+	// TODO: display message 
 	public static void parseLine(String s){
 		switch(s.charAt(0)){
 			case 'C':
@@ -73,6 +76,7 @@ public class Main {
 		}
 	}
 	
+	// Configures system settings
 	public static void systemConfig(String s){
 		String[] instructions;
 		instructions = s.split("\\s+");
@@ -83,6 +87,7 @@ public class Main {
 		timeQuantum = Integer.parseInt(instructions[4].substring(2, instructions[4].length()));
 	}
 	
+	// Save job arrival messages
 	public static void jobArrival(String s){
 		String[] instructions;
 		instructions = s.split("\\s+");
@@ -99,6 +104,7 @@ public class Main {
 		
 	}
 	
+	// Save device request messages
 	public static void deviceRequest(String s){
 		String[] instructions;
 		instructions = s.split("\\s+");
@@ -109,6 +115,7 @@ public class Main {
 		requests.add(new Request(arrivalTime, jobNumber, devices));
 	}
 	
+	// Save device release messages
 	public static void deviceRelease(String s){
 		String[] instructions;
 		instructions = s.split("\\s+");
@@ -117,6 +124,20 @@ public class Main {
 		int devices = Integer.parseInt(instructions[3].substring(2, instructions[3].length()));
 		
 		releases.add(new Release(arrivalTime, jobNumber, devices));
+	}
+	
+	// Search Job/Request/Release messages for one at the current time or advance time
+	public static void checkArrivalTime(){
+		for(int i = 0; i < jobs.size(); i++){
+			if(jobs.get(i).getArrivalTime() == currentTime){
+				routeJob();
+			}
+		}
+	}
+	
+	// Handles jobs that arrive at the current time
+	public static void routeJob(){
+		
 	}
 	
 	public static void main(String[] args){
