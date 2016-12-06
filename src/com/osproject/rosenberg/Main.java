@@ -19,12 +19,16 @@ public class Main {
 	// Jobs
 	public static ArrayList<Job> jobs = new ArrayList<Job>();
 	public static ArrayList<Job> activeJobs = new ArrayList<Job>();
+	public static ArrayList<Job> enteredSystem = new ArrayList<Job>();
 	
 	// Requests
 	public static ArrayList<Request> requests = new ArrayList<Request>();
 	
 	// Releases
 	public static ArrayList<Release> releases = new ArrayList<Release>();
+	
+	// Display Requests
+	public static ArrayList<Integer> displayRequests = new ArrayList<Integer>();
 	
 	// Hold Queues
 		// SJF
@@ -84,7 +88,7 @@ public class Main {
 				deviceRelease(s);
 				break;
 			case 'D':
-				///
+				displayRequests(s);
 				break;
 		}
 	}
@@ -141,6 +145,13 @@ public class Main {
 		releases.add(new Release(arrivalTime, jobNumber, devices));
 	}
 	
+	public static void displayRequests(String s){
+		String[] instructions;
+		instructions = s.split("\\s+");
+		int time = Integer.parseInt(instructions[1]);
+		displayRequests.add(time);
+	}
+	
 	// Search Job/Request/Release messages for one at the current time or advance time
 	// TODO add requests, releases and display
 	public static void checkArrivalTime(){
@@ -175,6 +186,7 @@ public class Main {
 				if(memoryToReturn > 0){
 					availableMemory = availableMemory + memoryToReturn;
 					availableDevices = availableDevices + activeJobs.get(i).getDevicesHeld();
+					activeJobs.get(i).setFinishedTime(currentTime);
 					completedQueue.add(activeJobs.get(i));
 					readyQueue.remove(activeJobs.get(i));
 					activeJobs.remove(activeJobs.get(i));
@@ -248,6 +260,19 @@ public class Main {
 		return false;
 	}
 	
+	public static void display(){
+		for(int i = 0; i < displayRequests.size(); i++){
+			if(displayRequests.get(i) == currentTime){
+				for(int j = 0; j < enteredSystem.size(); j++){
+					if(enteredSystem.get(j).getArrivalTime() <= displayRequests.get(i)){
+						System.out.println("Job #: " + enteredSystem.get(j).getJobNumber());
+					}
+				}
+			}
+		}
+	}
+	
+	
 	public static void main(String[] args){
 		
 		// Handle Input Text
@@ -257,13 +282,18 @@ public class Main {
 		for(int i = 0; i < allLines.size(); i++){
 			parseLine(allLines.get(i));
 		}
-		
-		// Look for new task of any type
-		checkArrivalTime();
-		// Check if a new process should be running and change it
-		updateActiveJobs();
-		// Advances time for active process
-		runActiveJob();
-		
+		while(!holdQueue1.isEmpty() || !holdQueue2.isEmpty() || !readyQueue.isEmpty() || !deviceQueue.isEmpty() || !activeJobs.isEmpty()){
+			// Look for new task of any type
+			checkArrivalTime();
+			// Check if a new process should be running and change it
+			updateActiveJobs();
+			// Advances time for active processes
+			runActiveJob();
+			
+			// Prints system status
+			display();
+			currentTime++;
+		}
+
 	}
 }

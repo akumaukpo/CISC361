@@ -11,6 +11,7 @@ public class Job {
 	private int remainingTime;
 	private int devicesHeld;
 	private int devicesNeeded;
+	private int finishedTime;
 	
 	public Job(int arrivalTime, int jobNumber, int requiredMemory, int requiredDevices, int runLength, int priority) {
 		this.arrivalTime = arrivalTime;
@@ -108,6 +109,14 @@ public class Job {
 
 	public void setDevicesNeeded(int devicesNeeded) {
 		this.devicesNeeded = devicesNeeded;
+	}
+
+	public int getFinishedTime() {
+		return finishedTime;
+	}
+
+	public void setFinishedTime(int finishedTime) {
+		this.finishedTime = finishedTime;
 	}
 	
 }
