@@ -11,11 +11,14 @@ public class Main {
 	public static int currentTime = 0;
 	public static int totalMemory = 0;
 	public static int availableMemory = 0;
+	public static int availableDevices = 0;
 	public static int totalDevices = 0;
 	public static int timeQuantum = 0;
+	public static int remainingTimeQuantum = 0;
 	
 	// Jobs
 	public static ArrayList<Job> jobs = new ArrayList<Job>();
+	public static ArrayList<Job> activeJobs = new ArrayList<Job>();
 	
 	// Requests
 	public static ArrayList<Request> requests = new ArrayList<Request>();
@@ -28,9 +31,14 @@ public class Main {
 	public static ArrayList<Job> holdQueue1 = new ArrayList<Job>();
 		// FIFO
 	public static ArrayList<Job> holdQueue2 = new ArrayList<Job>();
+		// Device Wait
+	public static ArrayList<Job> deviceQueue = new ArrayList<Job>();
 	
 	// Ready Queue
 	public static ArrayList<Job> readyQueue = new ArrayList<Job>();
+	
+	// Completed Queue
+	public static ArrayList<Job> completedQueue = new ArrayList<Job>();
 	
 	// Reads input text and saves messages into lists to be read later
 	public static void loadFile(){
@@ -89,7 +97,9 @@ public class Main {
 		totalMemory = Integer.parseInt(instructions[2].substring(2, instructions[2].length()));
 		availableMemory = totalMemory;
 		totalDevices = Integer.parseInt(instructions[3].substring(2, instructions[3].length()));
+		availableDevices = totalDevices;
 		timeQuantum = Integer.parseInt(instructions[4].substring(2, instructions[4].length()));
+		remainingTimeQuantum = timeQuantum;
 	}
 	
 	// Save job arrival messages
@@ -132,6 +142,7 @@ public class Main {
 	}
 	
 	// Search Job/Request/Release messages for one at the current time or advance time
+	// TODO add requests, releases and display
 	public static void checkArrivalTime(){
 		for(int i = 0; i < jobs.size(); i++){
 			Job j = jobs.get(i);
@@ -155,9 +166,93 @@ public class Main {
 		}
 	}
 	
+	// Run the active job
+	public static void runActiveJob(){
+		if(!activeJobs.isEmpty()){
+			for(int i = 0; i < activeJobs.size(); i++){
+				activeJobs.get(i).decRemainingTime();
+				int memoryToReturn = activeJobs.get(i).termintateJob();
+				if(memoryToReturn > 0){
+					availableMemory = availableMemory + memoryToReturn;
+					availableDevices = availableDevices + activeJobs.get(i).getDevicesHeld();
+					completedQueue.add(activeJobs.get(i));
+					readyQueue.remove(activeJobs.get(i));
+					activeJobs.remove(activeJobs.get(i));
+				}
+			}
+		}		
+	}
+	
+	// Run only when the current time quantum reaches 0 or if no active job
+	// Run the first priority 1 process before checking priority 2
+	public static void changeActiveJobs(){
+		for(int i = 0; i < deviceQueue.size(); i++){
+			if(deviceQueue.get(i).getDevicesNeeded() < availableDevices){
+				readyQueue.add(deviceQueue.get(i));
+				deviceQueue.remove(i);
+			}
+		}
+		for(int i = 0; i < readyQueue.size(); i++){
+			if(readyQueue.get(i).getPriority() == 1){
+				if(availableMemory >= readyQueue.get(i).getRequiredMemory()){
+					availableMemory = availableMemory - readyQueue.get(i).getRequiredMemory();
+					activeJobs.add(readyQueue.get(i));
+				}
+			}
+		}
+		for(int i = 0; i < readyQueue.size(); i++){
+			if(readyQueue.get(i).getPriority() == 2){
+				if(availableMemory >= readyQueue.get(i).getRequiredMemory()){
+					availableMemory = availableMemory - readyQueue.get(i).getRequiredMemory();
+					activeJobs.add(readyQueue.get(i));
+				}
+			}
+		}
+	}
+	
+	// If there is no active job, get one
+	// If the time quantum ends, reset it, 
+	// move the active job to the end of the ready queue,
+	// then get a new job
+	// If there is now a priority 1 process and the current
+	// process is priority 2, switch
+	public static void updateActiveJobs(){
+		if(activeJobs.isEmpty()){
+			changeActiveJobs();
+		}
+		else if(remainingTimeQuantum == 0){
+			remainingTimeQuantum = timeQuantum;
+			for(int i = 0; i < activeJobs.size(); i++){
+				readyQueue.remove(activeJobs.get(i));
+				readyQueue.add(activeJobs.get(i));
+			}
+			changeActiveJobs();
+		}
+		for(int i = 0; i < activeJobs.size(); i++){
+			if(activeJobs.get(i).getPriority() == 2){
+				if(priorityOneAvailable()){
+					readyQueue.remove(activeJobs.get(i));
+					readyQueue.add(activeJobs.get(i));
+					activeJobs.remove(activeJobs.get(i));
+				}
+			}
+		}
+	}
+	
+	public static boolean priorityOneAvailable(){
+		for(int i = 0; i < readyQueue.size(); i++){
+			if(readyQueue.get(i).getPriority() == 1){
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	public static void main(String[] args){
 		
 		// Handle Input Text
+		// I know it says not to pre-process the input file, 
+		// but this seemed way less complicated with limited time 
 		loadFile();
 		for(int i = 0; i < allLines.size(); i++){
 			parseLine(allLines.get(i));
@@ -165,5 +260,10 @@ public class Main {
 		
 		// Look for new task of any type
 		checkArrivalTime();
+		// Check if a new process should be running and change it
+		updateActiveJobs();
+		// Advances time for active process
+		runActiveJob();
+		
 	}
 }

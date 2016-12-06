@@ -9,6 +9,8 @@ public class Job {
 	private int runLength;
 	private int priority;
 	private int remainingTime;
+	private int devicesHeld;
+	private int devicesNeeded;
 	
 	public Job(int arrivalTime, int jobNumber, int requiredMemory, int requiredDevices, int runLength, int priority) {
 		this.arrivalTime = arrivalTime;
@@ -18,6 +20,7 @@ public class Job {
 		this.runLength = runLength;
 		this.priority = priority;
 		this.remainingTime = runLength;
+		this.devicesNeeded = 0;
 	}
 
 	// Checks if the job can be terminated
@@ -29,6 +32,10 @@ public class Job {
 		else{
 			return requiredMemory;
 		}
+	}
+	
+	public void decRemainingTime(){
+		remainingTime--;
 	}
 	
 	public int getArrivalTime() {
@@ -77,6 +84,30 @@ public class Job {
 
 	public void setPriority(int priority) {
 		this.priority = priority;
+	}
+
+	public int getRemainingTime() {
+		return remainingTime;
+	}
+
+	public void setRemainingTime(int remainingTime) {
+		this.remainingTime = remainingTime;
+	}
+
+	public int getDevicesHeld() {
+		return devicesHeld;
+	}
+
+	public void setDevicesHeld(int devicesHeld) {
+		this.devicesHeld = devicesHeld;
+	}
+
+	public int getDevicesNeeded() {
+		return devicesNeeded;
+	}
+
+	public void setDevicesNeeded(int devicesNeeded) {
+		this.devicesNeeded = devicesNeeded;
 	}
 	
 }
